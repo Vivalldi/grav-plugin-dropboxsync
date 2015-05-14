@@ -1,3 +1,11 @@
-enabled: true
-app_key: "yourappkey"
-app_secret: "yourappsecret"
+# Global plugin configurations
+
+enabled: true                 # Set to false to disable this plugin completely
+
+# Default options for DropBox Sync configuration.
+
+app:
+  key: "yourappkey"           # DropBox API key
+  secret: "yourappsecret"     # DropBox API secret
+
+# Global and page specific configurations
