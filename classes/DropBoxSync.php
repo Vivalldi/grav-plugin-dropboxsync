@@ -102,7 +102,7 @@ class DropBoxSync
 
         if(!$this->api->IsAuthorized())
         {
-            $return_url = "http://".$_SERVER['HTTP_HOST'].$SERVER['SCRIPT_NAME']."?auth_callback=1";
+            $return_url = "http://".$_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME']."?auth_callback=1";
             $auth_url=$this->api->BuildAuthorizeUrl($return_url);
             $request_token=$this->api->GetRequestToken();
             $this->store_token($request_token, $request_token['t']);
