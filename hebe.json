@@ -1,0 +1,15 @@
+{
+   "project":"grav-plugin-dropbox-sync",
+   "platforms":{
+      "grav":{
+         "nodes":{
+            "plugin":[
+               {
+                  "source":"/",
+                  "destination":"/user/plugins/dropboxsync"
+               }
+            ]
+         }
+      }
+   }
+}
