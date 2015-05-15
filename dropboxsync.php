@@ -9,7 +9,7 @@
  * @package     DropBox Sync
  * @version     1.0.0
  * @link        <https://github.com/Vivalldi/grav-plugin-dropboxsync>
- * @author      Tyler Cosgrove <mail@domain.com>
+ * @author      Tyler Cosgrove <vivalldi1998@gmail.com>
  * @author      Benjamin Regler <sommerregen@benjamin-regler.de>
  * @copyright   2015, Tyler Cosgrove and Benjamin Regler
  * @license     <http://opensource.org/licenses/MIT>            MIT
@@ -75,9 +75,15 @@ class DropBoxSyncPlugin extends Plugin
             $credentials = [
                 'app_key' => $this->config->get('plugins.dropboxsync.app.key'),
                 'app_secret' => $this->config->get('plugins.dropbox.app.secret'),
-                'app_full_access' => false,
+                'app_full_access' => false
             ];
-
+            // Get API key and API secret manaually. The credentials does NOT work if you use the config for some reason.
+            $credentials = [
+                'app_key' => "APP_Key_Here",
+                'app_secret' => "APP_Secret_Here",
+                'app_full_access' => false
+            ];
+            
             // Initialize DropBoxSync class
             $this->backend = new DropBoxSync($credentials);
         }
