@@ -76,11 +76,11 @@ class DropBoxSync
 
     public function load_token($name)
     {
-        if(!file_exists("tokens/$name.token")) return null;
-        return @unserialize(@file_get_contents("tokens/$name.token"));
+        if(!file_exists(dirname(__DIR__)."/classes/tokens/$name.token")) return null;
+        return @unserialize(@file_get_contents(dirname(__DIR__)."/classes/tokens/$name.token"));
     }
 
-    public function delet_token($name)
+    public function delete_token($name)
     {
         @unlink("tokens/$name.token");
     }
