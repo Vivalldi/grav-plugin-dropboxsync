@@ -71,7 +71,7 @@ class DropBoxSync
 
     public function store_token($token, $name)
     {
-        file_put_contents("tokens/$name.token", serialize($token));
+        file_put_contents(dirname(__DIR__)."/classes/tokens/$name.token", serialize($token));
     }
 
     public function load_token($name)
