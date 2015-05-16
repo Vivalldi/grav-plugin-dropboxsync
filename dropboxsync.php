@@ -35,6 +35,11 @@ class DropBoxSyncPlugin extends Plugin
      */
 
     /**
+     * @var bool
+     */
+    protected $active = false;
+
+    /**
      * Instance of DropBoxSync class
      *
      * @var object
@@ -59,7 +64,7 @@ class DropBoxSyncPlugin extends Plugin
     }
 
     /**
-     * Initialize configuration.
+     * Enable DropBoxSync only if url matches to the configuration.
      */
     public function onPluginsInitialized()
     {
@@ -68,22 +73,22 @@ class DropBoxSyncPlugin extends Plugin
             return;
         }
 
-        if ($this->config->get('plugins.dropboxsync.enabled')) {
+        /** @var Uri $uri */
+        $uri = $this->grav['uri'];
+        $route = $this->config->get('plugins.dropboxsync.route');
+
+        if ($this->config->get('plugins.dropboxsync.enabled') && $route && $route == $uri->path()) {
+            $this->active = true;
+
             require_once(__DIR__.'/classes/DropBoxSync.php');
 
             // Get API key and API secret
             $credentials = [
                 'app_key' => $this->config->get('plugins.dropboxsync.app.key'),
-                'app_secret' => $this->config->get('plugins.dropbox.app.secret'),
+                'app_secret' => $this->config->get('plugins.dropboxsync.app.secret'),
                 'app_full_access' => false
             ];
-            // Get API key and API secret manaually. The credentials does NOT work if you use the config for some reason.
-            $credentials = [
-                'app_key' => "APP_Key_Here",
-                'app_secret' => "APP_Secret_Here",
-                'app_full_access' => false
-            ];
-            
+
             // Initialize DropBoxSync class
             $this->backend = new DropBoxSync($credentials);
         }
