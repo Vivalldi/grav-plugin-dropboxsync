@@ -8,4 +8,7 @@ app:
   key: "yourappkey"           # DropBox API key
   secret: "yourappsecret"     # DropBox API secret
 
+route: "/dropboxsync" 				# Route for sync
+key: "yourstrongkey"  				# Key to use for sync access
+
 # Global and page specific configurations

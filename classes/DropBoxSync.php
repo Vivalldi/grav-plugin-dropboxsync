@@ -11,6 +11,7 @@ namespace Grav\Plugin\DropBoxSync;
 
 use Grav\Common\Grav;
 use Grav\Common\GravTrait;
+use Grav\Common\Filesystem\Folder;
 
 /**
  * DropBox Sync
@@ -26,20 +27,107 @@ class DropBoxSync
 
     protected $api;
 
+    protected $config;
+
+    protected $file = 'backup://.dropboxsync';
+
     public function __construct(array $credentials = [])
     {
-       require_once(dirname(__DIR__).'/vendor/DropPHP/DropboxClient.php');
+        require_once(dirname(__DIR__).'/vendor/DropPHP/DropboxClient.php');
+        $this->api = new \DropboxClient($credentials, 'en');
 
-       $this->api = $dropbox = new \DropboxClient($credentials, 'en');
+        // Resolve path
+        $locator = self::getGrav()['locator'];
+        $this->file = $locator->findResource($this->file, true, true);
+        $this->init();
 
-
-       $file = dirname(__DIR__).'/vendor/DropPHP/README.md';
-       $this->upload([$file]);
+        // Checks if access token is required
+        if(!$this->IsAuthorized()) {
+            $this->auth();
+        } else {
+            $this->sync();
+        }
     }
+
+    public function __call($function, $params) {
+        if (method_exists($this->api, $function)) {
+            return call_user_func_array([$this->api, $function], $params);
+        } else {
+            throw new \Exception("Function '$function' not found.");
+        }
+
+        return $this;
+    }
+
+    public function init(array $config = []) {
+        if (!$this->config) {
+            $this->config = $this->loadConfig($this->file, $config);
+        }
+
+        switch ($this->config['action']) {
+            case 'access':
+                // There already exists an access token, load it
+                $this->SetAccessToken($this->config['token']);
+
+                echo "<pre>";
+                echo "<b>Config:</b>\r\n";
+                print_r($this->config);
+                echo "<b>Account:</b>\r\n";
+                print_r($this->GetAccountInfo());
+                $files = $this->GetFiles("",false);
+                echo "\r\n\r\n<b>Files:</b>\r\n";
+                print_r(array_keys($files));
+                break;
+
+            case 'auth':
+                // Are we coming from dropbox's auth page?
+                if(!empty($_GET['auth_callback'])) {
+                    // Check if token match the previous one
+                    if ($_GET['oauth_token'] !== $this->config['token']['t']) {
+                        throw new \Exception('Request token not found!');
+                    }
+
+                    // Get & store access token, the request token is not needed anymore
+                    $this->config['action'] = 'access';
+                    $this->config['token'] = $this->GetAccessToken($this->config['token']);
+
+                    $this->storeConfig($this->file, $this->config);
+
+                    $url = strtok($_SERVER['REQUEST_URI'], '?');
+                    header('Location: '.$_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].$url);
+                } else {
+                    call_user_func([$this, $this->config['action']]);
+                    $this->storeConfig($this->file, $this->config);
+                }
+                break;
+        }
+        exit();
+    }
+
+    public function auth($reset = true) {
+        // Checks if access token is required
+        if($reset || !$this->IsAuthorized()) {
+            // Redirect user to dropbox auth page
+            $url = strtok($_SERVER['REQUEST_URI'], '?');
+            $returnUrl = 'http://'.$_SERVER['HTTP_HOST'].$url.'?auth_callback=1';
+            $authUrl = $this->BuildAuthorizeUrl($returnUrl);
+
+            $this->config['action'] = 'auth';
+            $this->config['token'] = $this->GetRequestToken();
+            echo("Authentication required. <a href='$authUrl'>Click here.</a>");
+        }
+    }
+
+    public function sync($source, $target = '') {
+        echo "sync";
+        $file = dirname(__DIR__).'/vendor/DropPHP/README.md';
+        $this->upload([$file]);
+    }
+
+    // -----------------------------
 
     public function upload($files)
     {
-        $this->handle_dropbox_auth();
         foreach ($files as $key => $this_file)
         {
             if ( file_exists($this_file) )
@@ -69,44 +157,27 @@ class DropBoxSync
         return $result;
     }//end function
 
-    public function store_token($token, $name)
-    {
-        file_put_contents(dirname(__DIR__)."/classes/tokens/$name.token", serialize($token));
-    }
+    /** -------------------------------
+     * Private/protected helper methods
+     * --------------------------------
+     */
 
-    public function load_token($name)
-    {
-        if(!file_exists(dirname(__DIR__)."/classes/tokens/$name.token")) return null;
-        return @unserialize(@file_get_contents(dirname(__DIR__)."/classes/tokens/$name.token"));
-    }
+    protected function loadConfig($file, array $config = []) {
+        $config += [
+            'action' => 'auth',
+            'token' => [],
+        ];
 
-    public function delete_token($name)
-    {
-        @unlink("tokens/$name.token");
-    }
-
-    public function handle_dropbox_auth()
-    {
-        $access_token= $this->load_token("access");
-        if(!empty($access_token)){
-            $this->api->SetAccessToken($access_token);
-        }
-        elseif(!empty($_GET['auth_callback']))
-        {
-            $request_token = $this->load_token($_GET['oauth_token']);
-            if(empty($request_token)) die ('Request token not found!');
-            $access_token = $this->api->GetAccessToken($request_token);
-            $this->store_token($access_token, "access");
-            $this->delete_token($_GET['oauth_token']);
+        if (!file_exists($file)) {
+            Folder::mkdir(dirname($file));
+            $this->storeConfig($file, $config);
         }
 
-        if(!$this->api->IsAuthorized())
-        {
-            $return_url = "http://".$_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME']."?auth_callback=1";
-            $auth_url=$this->api->BuildAuthorizeUrl($return_url);
-            $request_token=$this->api->GetRequestToken();
-            $this->store_token($request_token, $request_token['t']);
-            die("Authentication required. <a href='$auth_url'>Click here.</a>");
-        }
+        return json_decode(file_get_contents($file), true);
+    }
+
+    protected function storeConfig($file, array $config = []) {
+        $content = json_encode($config);
+        return file_put_contents($file, $content);
     }
 }
