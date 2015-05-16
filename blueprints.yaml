@@ -4,7 +4,7 @@ description: "This plugin syncs your data with your DropBox account."
 icon: dropbox
 author:
   name: "Vivalldi and Sommerregen"
-  email: mail@domain.com
+  email: vivalldi1998@gmail.com
 homepage: https://github.com/Vivalldi/grav-plugin-dropboxsync
 keywords: [dropbox, sync, plugin]
 docs: https://github.com/Vivalldi/grav-plugin-dropboxsync/blob/master/README.md
