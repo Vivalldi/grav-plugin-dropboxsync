@@ -86,7 +86,7 @@ class DropBoxSyncPlugin extends Plugin
             $credentials = [
                 'app_key' => $this->config->get('plugins.dropboxsync.app.key'),
                 'app_secret' => $this->config->get('plugins.dropboxsync.app.secret'),
-                'app_full_access' => false
+                'app_full_access' => $this->config->get('plugins.dropboxsync.app.full_access')
             ];
 
             // Initialize DropBoxSync class

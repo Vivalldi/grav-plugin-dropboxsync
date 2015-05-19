@@ -94,7 +94,14 @@ class DropBoxSync
                     $this->storeConfig($this->file, $this->config);
 
                     $url = strtok($_SERVER['REQUEST_URI'], '?');
-                    header('Location: '.$_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].$url);
+                    $request_Scheme = 'SCHEME NOTSET';
+                    if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] = 'on'){
+                        $request_Scheme = 'HTTPS';
+                    }
+                    else {
+                        $request_Scheme = 'HTTP';
+                    }
+                    header('Location: '.$request_Scheme.'://'.$_SERVER['HTTP_HOST'].$url);
                 } else {
                     call_user_func([$this, $this->config['action']]);
                     $this->storeConfig($this->file, $this->config);
