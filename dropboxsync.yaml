@@ -11,5 +11,6 @@ app:
 
 route: "/dropboxsync" 				# Route for sync
 key: "yourstrongkey"  				# Key to use for sync access
+route_webhook: "/dropboxwebhook"    # Route for DropBox App Webhooks
 
 # Global and page specific configurations

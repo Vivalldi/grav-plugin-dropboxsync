@@ -92,5 +92,10 @@ class DropBoxSyncPlugin extends Plugin
             // Initialize DropBoxSync class
             $this->backend = new DropBoxSync($credentials);
         }
+        $route_webhook = $this->config->get('plugins.dropboxsync.route_webhook');
+        if ($this->config->get('plugins.dropboxsync.enabled') && $route_webhook && $route_webhook == $uri->path()) {
+            $this->active = true;
+            
+        }
     }
 }

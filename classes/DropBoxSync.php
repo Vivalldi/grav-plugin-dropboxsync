@@ -108,7 +108,7 @@ class DropBoxSync
                 }
                 break;
         }
-        exit();
+        //exit();
     }
 
     public function auth($reset = true) {
@@ -125,7 +125,7 @@ class DropBoxSync
         }
     }
 
-    public function sync($source, $target = '') {
+    public function sync($source = '', $target = '') {
         echo "sync";
         $file = dirname(__DIR__).'/vendor/DropPHP/README.md';
         $this->upload([$file]);
@@ -143,7 +143,7 @@ class DropBoxSync
                     $upload_name=$this_file;
                     $result="<pre>";
                     $result.="\r\n\r\n\<b>Uploading $upload_name:</b>\r\n";
-                    $meta=$this->api->UploadFile($this_file);
+                    $meta=$this->api->UploadFile($this_file, "\Grav",true);
                     $result.=print_r($meta,true);
                     $result.="\r\n done!";
                     $result.="</pre>";
@@ -155,12 +155,7 @@ class DropBoxSync
             }
         }//end foreach
 
-        $backup_folder=dirname(__FILE__).'/backup/'."dropbox_results.txt"; ;
-        $myFile = $backup_folder;
-        $fh = fopen($myFile, 'w') or die("can't open file");
-        fwrite($fh, $result);
-        fclose($fh);
-
+        echo $result;
         return $result;
     }//end function
 
