@@ -11,7 +11,21 @@ Basic documentation can be found at http://fabi.me/en/php-projects/dropphp-dropb
 
 Changelog
 -------
-COSGROVE150MB) will automatically be uploaded in chunks.
+
+= 1.7.1 =
+* Check cURL availability on wakeup after object serialization
+
+= 1.7 =
+* Errors in server response after download  & upload will be thrown
+* UploadFile checks if the $dropbox_path is an existing directory and puts the file there if so
+
+= 1.6 =
+* API_CONTENT_URL changed to https fixing the download size mismatch error
+* Fixed cURL upload
+* Fixed parameters for API GET requests (GetThumbnail, GetFiles ...)
+
+= 1.5 =
+* Added support for chunked uploads. Large files (>150MB) will automatically be uploaded in chunks.
 
 = 1.4 =
 * New API functions: GetThumbnail, GetRevisions, Restore, Search and GetCopyRef 
