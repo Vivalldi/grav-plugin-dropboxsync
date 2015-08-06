@@ -127,37 +127,72 @@ class DropBoxSync
 
     public function sync($source = '', $target = '') {
         echo "sync";
-        $file = dirname(__DIR__).'/vendor/DropPHP/README.md';
-        $this->upload([$file]);
+        $file = $_SERVER['DOCUMENT_ROOT'];//dirname(dirname(__DIR__)); //.'/vendor/DropPHP/README.md';
+        $this->upload($file);
     }
 
     // -----------------------------
-
-    public function upload($files)
+    
+    /**
+     * upload 
+     * @return metadata to page 
+     */
+    public function upload($dirtocopy)
     {
-        foreach ($files as $key => $this_file)
-        {
-            if ( file_exists($this_file) )
-            {
-                try {
-                    $upload_name=$this_file;
-                    $result="<pre>";
-                    $result.="\r\n\r\n\<b>Uploading $upload_name:</b>\r\n";
-                    $meta=$this->api->UploadFile($this_file, "\Grav",true);
-                    $result.=print_r($meta,true);
-                    $result.="\r\n done!";
-                    $result.="</pre>";
+       if(!file_exists($dirtocopy)){
 
-                    $result.='<span style=color:green">File successfully uploaded to you Dropbox! </span>';
-                } catch(Exception $e) {
-                    $result.='<span style="color: red">Error: ' . htmlspecialchars($e->getMessage()) . '</span>';
+            exit("File $dirtocopy does not exist");
+            
+        } else {
+
+            //if dealing with a file upload it
+            if(is_file($dirtocopy)){
+                //$this->uploadFile($dirtocopy);
+                $meta = $this->api->UploadFile($dirtocopy, "\Grav",true);
+                print_r($meta,true);
+                   
+            } else { //otherwise collect all files and folders
+
+                $fileinfos = new \RecursiveIteratorIterator(
+                    new FilesOnlyFilter(
+                        new VisibleOnlyFilter(
+                            new SelectFoldersOnlyFilter(
+                            new \RecursiveDirectoryIterator(
+                                $dirtocopy,
+                                \FilesystemIterator::SKIP_DOTS
+                                    | \FilesystemIterator::UNIX_PATHS
+                            )
+                        )
+                    )),
+                    \RecursiveIteratorIterator::LEAVES_ONLY,
+                    \RecursiveIteratorIterator::CATCH_GET_CHILD
+                );
+
+                $count = 0;
+                foreach ($fileinfos as $pathname => $fileinfo) {
+                    echo $fileinfos->getSubPathname(), "\n";
+                    echo dirname($fileinfos->getSubPathname()), "\n\n";
+                    $count++;
+                    set_time_limit($count*2000);
+                    $this->api->UploadFile($pathname, '\Grav\\' . dirname($fileinfos->getSubPathname()));
                 }
+                echo $count;
             }
-        }//end foreach
+        }
+    }//end public function upload()
+    
 
-        echo $result;
-        return $result;
-    }//end function
+    /**
+     * ignoreList array of filenames or directories to ignore
+     * @return array 
+     */
+    public function ignoreList(){
+        return array(
+            '.DS_Store',
+            'cgi-bin',
+            '.git'
+        );
+    }
 
     /** -------------------------------
      * Private/protected helper methods
@@ -183,3 +218,45 @@ class DropBoxSync
         return file_put_contents($file, $content);
     }
 }
+
+class VisibleOnlyFilter extends \RecursiveFilterIterator
+{
+    public function accept()
+    {
+        $fileName = $this->getInnerIterator()->current()->getFileName();
+        $firstChar = $fileName[0];
+        return $firstChar !== '.';
+    }
+}
+
+class FilesOnlyFilter extends \RecursiveFilterIterator
+{
+    public function accept()
+    {
+        $iterator = $this->getInnerIterator();
+
+        // allow traversal
+        if ($iterator->hasChildren()) {
+            return true;
+        }
+
+        // filter entries, only allow true files
+        return $iterator->current()->isFile();
+    }
+}
+
+class SelectFoldersOnlyFilter extends \RecursiveFilterIterator
+{
+    public function accept()
+    {
+        $iterator = $this->getInnerIterator();
+        $currentPath = $iterator->current()->getPathname();
+        
+        //check if folder
+        if ($currentPath != $_SERVER['DOCUMENT_ROOT'] . "/cache"){ //check for cache folder
+            return true;
+        }
+    }
+}
+
+?>
