@@ -143,6 +143,7 @@ class DropBoxSync
         require_once(dirname(__FILE__)."/VisibleOnlyFilter.php");
         require_once(dirname(__FILE__)."/FilesOnlyFilter.php");
         require_once(dirname(__FILE__)."/SelectFoldersOnlyFilter.php");
+        require_once(dirname(__FILE__)."/IgnorableFilesFilter.php");
 
        if(!file_exists($dirtocopy)){
 
@@ -152,9 +153,7 @@ class DropBoxSync
 
             //if dealing with a file upload it
             if(is_file($dirtocopy)){
-                //$this->uploadFile($dirtocopy);
-                $meta = $this->api->UploadFile($dirtocopy, "\Grav",true);
-                print_r($meta,true);
+                $this->api->UploadFile($dirtocopy, "\Grav",true);
                    
             } else { //otherwise collect all files and folders
 
@@ -162,26 +161,32 @@ class DropBoxSync
                     new FilesOnlyFilter(
                         new VisibleOnlyFilter(
                             new SelectFoldersOnlyFilter(
-                            new \RecursiveDirectoryIterator(
-                                $dirtocopy,
-                                \FilesystemIterator::SKIP_DOTS
-                                    | \FilesystemIterator::UNIX_PATHS
+                                new IgnorableFilesFilter(
+                                    new \RecursiveDirectoryIterator(
+                                        $dirtocopy,
+                                        \FilesystemIterator::SKIP_DOTS
+                                            | \FilesystemIterator::UNIX_PATHS
+                                    )
+                                )
                             )
                         )
-                    )),
+                    ),
                     \RecursiveIteratorIterator::LEAVES_ONLY,
                     \RecursiveIteratorIterator::CATCH_GET_CHILD
                 );
 
                 $count = 0;
-                foreach ($fileinfos as $pathname => $fileinfo) {
-                    echo $fileinfos->getSubPathname(), "\n";
-                    echo dirname($fileinfos->getSubPathname()), "\n\n";
-                    $count++;
-                    set_time_limit($count*2000);
-                    $this->api->UploadFile($pathname, '\Grav\\' . dirname($fileinfos->getSubPathname()));
+                foreach ($fileinfos as $pathname => $fileinfo)
+                {
+                    $count++; //count all files
                 }
-                echo $count;
+                set_time_limit($count*2); //create a timeout with 2 seconds max per file
+
+                foreach ($fileinfos as $pathname => $fileinfo)
+                {
+                    $location = str_replace($_SERVER['DOCUMENT_ROOT'],"/Grav", dirname($fileinfo));
+                    $this->api->UploadFile($pathname, $location ,true);
+                }
             }
         }
     }//end public function upload()

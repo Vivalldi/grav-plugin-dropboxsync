@@ -23,7 +23,7 @@ class SelectFoldersOnlyFilter extends \RecursiveFilterIterator
         $currentPath = $iterator->current()->getPathname();
         
         //check if folder
-        if (!in_array($currentPath, $this->ignoreList())){ //check for cache folder
+        if (!in_array($currentPath, $this->ignoreList())){
             return true;
         }
     }
@@ -35,8 +35,12 @@ class SelectFoldersOnlyFilter extends \RecursiveFilterIterator
     private function ignoreList(){
         return array(
             $_SERVER['DOCUMENT_ROOT'] . '/assets',
+            $_SERVER['DOCUMENT_ROOT'] . '/bin',
             $_SERVER['DOCUMENT_ROOT'] . '/cache',
-            $_SERVER['DOCUMENT_ROOT'] . '/system'
+            $_SERVER['DOCUMENT_ROOT'] . '/images',
+            $_SERVER['DOCUMENT_ROOT'] . '/logs',
+            $_SERVER['DOCUMENT_ROOT'] . '/system',
+            $_SERVER['DOCUMENT_ROOT'] . '/vendor'
         );
     }
 }

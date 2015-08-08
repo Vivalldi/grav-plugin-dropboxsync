@@ -99,7 +99,7 @@ class DropBoxSyncPlugin extends Plugin
                 echo $_GET['challenge'];
                 exit();
             }
-            file_put_contents(dirname(__FILE__)."/text.txt", print_r($_POST[]),FILE_APPEND);
+
             exit();
             
             
