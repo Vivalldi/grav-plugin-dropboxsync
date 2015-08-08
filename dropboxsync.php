@@ -95,6 +95,13 @@ class DropBoxSyncPlugin extends Plugin
         $route_webhook = $this->config->get('plugins.dropboxsync.route_webhook');
         if ($this->config->get('plugins.dropboxsync.enabled') && $route_webhook && $route_webhook == $uri->path()) {
             $this->active = true;
+            if(isset($_GET['challenge'])){
+                echo $_GET['challenge'];
+                exit();
+            }
+            file_put_contents(dirname(__FILE__)."/text.txt", print_r($_POST[]),FILE_APPEND);
+            exit();
+            
             
         }
     }

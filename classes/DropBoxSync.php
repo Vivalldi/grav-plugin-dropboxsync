@@ -139,6 +139,9 @@ class DropBoxSync
      */
     public function upload($dirtocopy)
     {
+        require_once(dirname(__FILE__)."/VisibleOnlyFilter.php");
+        require_once(dirname(__FILE__)."/FilesOnlyFilter.php");
+        require_once(dirname(__FILE__)."/SelectFoldersOnlyFilter.php");
        if(!file_exists($dirtocopy)){
 
             exit("File $dirtocopy does not exist");
@@ -180,19 +183,6 @@ class DropBoxSync
             }
         }
     }//end public function upload()
-    
-
-    /**
-     * ignoreList array of filenames or directories to ignore
-     * @return array 
-     */
-    public function ignoreList(){
-        return array(
-            '.DS_Store',
-            'cgi-bin',
-            '.git'
-        );
-    }
 
     /** -------------------------------
      * Private/protected helper methods
@@ -219,44 +209,5 @@ class DropBoxSync
     }
 }
 
-class VisibleOnlyFilter extends \RecursiveFilterIterator
-{
-    public function accept()
-    {
-        $fileName = $this->getInnerIterator()->current()->getFileName();
-        $firstChar = $fileName[0];
-        return $firstChar !== '.';
-    }
-}
-
-class FilesOnlyFilter extends \RecursiveFilterIterator
-{
-    public function accept()
-    {
-        $iterator = $this->getInnerIterator();
-
-        // allow traversal
-        if ($iterator->hasChildren()) {
-            return true;
-        }
-
-        // filter entries, only allow true files
-        return $iterator->current()->isFile();
-    }
-}
-
-class SelectFoldersOnlyFilter extends \RecursiveFilterIterator
-{
-    public function accept()
-    {
-        $iterator = $this->getInnerIterator();
-        $currentPath = $iterator->current()->getPathname();
-        
-        //check if folder
-        if ($currentPath != $_SERVER['DOCUMENT_ROOT'] . "/cache"){ //check for cache folder
-            return true;
-        }
-    }
-}
 
 ?>
