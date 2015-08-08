@@ -139,9 +139,11 @@ class DropBoxSync
      */
     public function upload($dirtocopy)
     {
+
         require_once(dirname(__FILE__)."/VisibleOnlyFilter.php");
         require_once(dirname(__FILE__)."/FilesOnlyFilter.php");
         require_once(dirname(__FILE__)."/SelectFoldersOnlyFilter.php");
+
        if(!file_exists($dirtocopy)){
 
             exit("File $dirtocopy does not exist");
@@ -208,6 +210,5 @@ class DropBoxSync
         return file_put_contents($file, $content);
     }
 }
-
 
 ?>
